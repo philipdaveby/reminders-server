@@ -30,6 +30,26 @@ router.post('/api/todo', async (req, res) => {
   res.sendStatus(201);
 });
 
+router.patch('/api/todo/:id', async (req, res) => {
+    const id = parseInt(req.params.id);
+    const query = { todoId: id };
+
+    
+    try {
+        const todo = await TodoModel.findOne({query});
+        if (todo) {
+            console.log(todo.isComplete)
+            req.body.isComplete ? todo.isComplete = true : todo.isComplete = false;
+            res.status(204).send()
+            await todo.save();
+            console.log(todo.isComplete)
+        }
+	} catch {
+		res.status(404)
+		res.send({ error: "Post doesn't exist!" })
+	}
+})
+
 router.delete('/api/todo/:id', async (req, res) => {
     const id = parseInt(req.params.id);
     const query = { todoId: id };
