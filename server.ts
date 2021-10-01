@@ -9,8 +9,8 @@ import express from "express";
 import reminders from './routes/reminders'
 import bodyParser from 'body-parser'
 import { Schema, model, connect } from 'mongoose';
-import { ObjectId } from "mongodb";
-import todoModel from "./models/Todo";
+// import { ObjectId } from "mongodb";
+// import todoModel from "./models/Todo";
 
 
 const cors = require('cors');
@@ -22,6 +22,19 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 app.use('/', reminders);
+
+
+const run = async ():Promise<void> => {
+  await connect(endpoint.MongoDBUrl);
+  
+  app.listen(PORT, () => {
+    console.log(`[server]: Server is running at https://localhost:${PORT}`);
+  });
+}
+
+run()
+.catch(err => console.log(err));
+
 
 // interface Todo {
 //   id: number,
@@ -42,30 +55,6 @@ app.use('/', reminders);
 // })
 
 // const todoModel = model<Todo>('Todo', schema);
-
-const run = async ():Promise<void> => {
-  await connect(endpoint.MongoDBUrl);
-  
-  // const doc = new todoModel({
-  //   id: 5,
-  //   task: 'Buy french fries',
-  //   isComplete: false,
-  //   owner: 'philip.daveby@gmail.com',
-  //   locked: false
-  // });
-
-  // await doc.save();
-
-  app.listen(PORT, () => {
-    console.log(`[server]: Server is running at https://localhost:${PORT}`);
-  });
-  
-}
-
-run()
-.catch(err => console.log(err));
-
-
 
 
 // type SubTask = {

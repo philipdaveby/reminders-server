@@ -1,16 +1,16 @@
-type Todo = {
-    id: number,
+export type Todo = {
+    todoId: number,
     task: string,
     isComplete: boolean,
     owner: string,
-    locked: false,
-    subtasks: subTask[]
+    locked: boolean,
+    subTasks?: Array<SubTask>
 }
 
-type subTask = {
-    id: number,
+type SubTask = {
+    todoId: number,
     task: string,
     isComplete: boolean,
     owner: string,
-    locked: false
+    locked: boolean
 }

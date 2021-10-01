@@ -1,21 +1,53 @@
 import mongoose, { Schema, model } from 'mongoose';
-// import { ObjectId } from "mongodb";
+import { Todo } from '../types'
+// // import { ObjectId } from "mongodb";
+
+// interface Todo {
+//   Todo: Todo
+// }
 
 const TodoSchema = new Schema<Todo>({
-    id: { type: Number, required: true},
+    todoId: { type: Number, required: true},
     task: { type: String, required: true},
     isComplete: { type: Boolean, required: true},
     owner: { type: String, required: true},
-    locked: { type: Boolean, required: true}
+    locked: { type: Boolean, required: true},
+    subTasks: { type: Array, required: true }
   });
 
-  interface Todo {
-    id: number,
-    task: string,
-    isComplete: boolean,
-    owner: string,
-    locked: boolean
-  }
+//   type Todo = {
+//     id: number,
+//     task: string,
+//     isComplete: boolean,
+//     owner: string,
+//     locked: boolean,
+//     subTasks?: Array<SubTask>
+// }
+
+// type SubTask = {
+//     id: number,
+//     task: string,
+//     isComplete: boolean,
+//     owner: string,
+//     locked: boolean
+// }
+
+//   interface Todo {
+//     id: number,
+//     task: string,
+//     isComplete: boolean,
+//     owner: string,
+//     locked: boolean,
+//     subTasks: SubTask
+//   }
+
+//   type SubTask = {
+//     id: number,
+//     task: string,
+//     isComplete: boolean,
+//     owner: string,
+//     locked: boolean
+// }
 
   const todoModel = model<Todo>('Todo', TodoSchema);
 
