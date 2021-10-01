@@ -75,7 +75,7 @@ router.get('/', async (req, res) => {
 
 router.post('/', async (req, res) => {
     const doc = new TodoModel({
-    id: 5,
+    id: Math.floor(Math.random()*10000),
     task: req.body.task,
     isComplete: false,
     owner: 'philip.daveby@gmail.com',

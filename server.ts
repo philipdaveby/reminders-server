@@ -1,9 +1,18 @@
+import dotenv from 'dotenv'
+dotenv.config();
+import endpoint from './endpoints.config';
+
+// const path = require('path')
+// require('dotenv').config({ path: path.resolve(__dirname, '.env') })
+
 import express from "express";
 import reminders from './routes/reminders'
 import bodyParser from 'body-parser'
 import { Schema, model, connect } from 'mongoose';
 import { ObjectId } from "mongodb";
 import todoModel from "./models/Todo";
+
+
 const cors = require('cors');
 
 const app = express();
@@ -35,7 +44,7 @@ app.use('/', reminders);
 // const todoModel = model<Todo>('Todo', schema);
 
 const run = async ():Promise<void> => {
-  await connect('mongodb+srv://philip:MxmoQjK5Zay4@cluster0.mapna.mongodb.net/reminders?retryWrites=true&w=majority');
+  await connect(endpoint.MongoDBUrl);
   
   // const doc = new todoModel({
   //   id: 5,
