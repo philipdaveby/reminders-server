@@ -5,24 +5,55 @@ import endpoint from './endpoints.config';
 // const path = require('path')
 // require('dotenv').config({ path: path.resolve(__dirname, '.env') })
 
-import express from "express";
+import express, { response } from "express";
 import reminders from './routes/reminders'
 import bodyParser from 'body-parser'
 import { Schema, model, connect } from 'mongoose';
-// import { ObjectId } from "mongodb";
-// import todoModel from "./models/Todo";
-
-
+import * as admin from 'firebase-admin';
+import { request } from 'http';
+const cookieParser = require("cookie-parser");
+const csrf = require('csurf');
 const cors = require('cors');
+const serviceAccount = require('./serviceAccountKey.json');
+
+// const csrfMiddleware = csrf({ cookie: true });
 
 const app = express();
 const PORT = 8000;
 
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: 'https://Reminders-Development.firebaseio.com'
+});
+
+const validate = (req:express.Request, res:express.Response, next:express.NextFunction) => {   
+  if (!req.headers.authorization) {
+    res.status(500).send('You are not authorized');
+    return;
+  }    
+  admin
+  .auth()
+  .verifyIdToken(req.headers.authorization)
+  .then(() => next())
+  .catch(error => {
+    res.status(500).send(error.message);
+    res.end();
+  })
+  // next();
+}
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser());
+// app.use(csrfMiddleware);
 app.use(cors());
+app.use(validate)
 app.use('/', reminders);
 
+// app.all("*", (req, res, next) => {
+//   res.cookie("XSRF-TOKEN", req.csrfToken());
+//   next();
+// });
 
 const run = async ():Promise<void> => {
   await connect(endpoint.MongoDBUrl);
