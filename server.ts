@@ -6,16 +6,28 @@ import reminders from './routes/reminders'
 import bodyParser from 'body-parser'
 import { connect } from 'mongoose';
 import * as admin from 'firebase-admin';
-// import { request } from 'http';
-// const cookieParser = require("cookie-parser");
-// const csrf = require('csurf');
 const cors = require('cors');
 const serviceAccount = require('./serviceAccountKey.json');
-
-// const csrfMiddleware = csrf({ cookie: true });
+import { Socket } from "socket.io";
+import config from './utils/config';
 
 const app = express();
+const server = require('http').createServer(app)
+const options = {
+  cors: {
+    origin: [config.frontend_url]
+  }
+}
+const io = require('socket.io')(server, options);
 const PORT = 8000;
+
+io.on("connection", (socket: Socket) => {
+  console.log(socket.id);
+  socket.on('custom-event', (number, string, obj) => {
+    console.log(number, string, obj)
+  })
+});
+
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
@@ -39,17 +51,16 @@ const validate = (req:express.Request, res:express.Response, next:express.NextFu
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-// app.use(cookieParser());
 app.use(cors());
 app.use(validate)
 app.use('/', reminders);
 
+server.listen(PORT, () => {
+  console.log(`[server]: Server is running at ${config.frontend_url}`);
+});
 const run = async ():Promise<void> => {
   await connect(endpoint.MongoDBUrl);
   
-  app.listen(PORT, () => {
-    console.log(`[server]: Server is running at https://localhost:${PORT}`);
-  });
 }
 
 run()
