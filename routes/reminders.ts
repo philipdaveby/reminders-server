@@ -16,17 +16,22 @@ router.post('/api/todos', async (req, res) => {
 });
 
 router.post('/api/todo', async (req, res) => {
-    const doc = new TodoModel({
-    todoId: Math.floor(Math.random()*10000),
-    task: req.body.task,
-    isComplete: false,
-    owner: 'philip.daveby@gmail.com',
-    locked: false,
-    subTasks: []
-  });
-
-  await doc.save();
-  res.sendStatus(201);
+    const subTasks = req.body.subTasks;
+    try {
+        const doc = new TodoModel({
+        todoId: Math.floor(Math.random()*10000),
+        task: req.body.task,
+        isComplete: false,
+        owner: 'philip.daveby@gmail.com',
+        locked: false,
+        subTasks
+      });
+    
+      await doc.save();
+      res.sendStatus(201);
+    } catch (error: any) {
+        res.status(500).send(error.message)
+    }
 });
 
 router.patch('/api/todo/:id', async (req, res) => {

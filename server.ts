@@ -1,18 +1,14 @@
 import dotenv from 'dotenv'
 dotenv.config();
 import endpoint from './endpoints.config';
-
-// const path = require('path')
-// require('dotenv').config({ path: path.resolve(__dirname, '.env') })
-
-import express, { response } from "express";
+import express from "express";
 import reminders from './routes/reminders'
 import bodyParser from 'body-parser'
-import { Schema, model, connect } from 'mongoose';
+import { connect } from 'mongoose';
 import * as admin from 'firebase-admin';
-import { request } from 'http';
-const cookieParser = require("cookie-parser");
-const csrf = require('csurf');
+// import { request } from 'http';
+// const cookieParser = require("cookie-parser");
+// const csrf = require('csurf');
 const cors = require('cors');
 const serviceAccount = require('./serviceAccountKey.json');
 
@@ -39,21 +35,14 @@ const validate = (req:express.Request, res:express.Response, next:express.NextFu
     res.status(500).send(error.message);
     res.end();
   })
-  // next();
 }
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
-// app.use(csrfMiddleware);
+// app.use(cookieParser());
 app.use(cors());
 app.use(validate)
 app.use('/', reminders);
-
-// app.all("*", (req, res, next) => {
-//   res.cookie("XSRF-TOKEN", req.csrfToken());
-//   next();
-// });
 
 const run = async ():Promise<void> => {
   await connect(endpoint.MongoDBUrl);
