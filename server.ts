@@ -22,10 +22,10 @@ const io = require('socket.io')(server, options);
 const PORT = 8000;
 
 io.on("connection", (socket: Socket) => {
-  console.log(socket.id);
-  socket.on('custom-event', (number, string, obj) => {
-    console.log(number, string, obj)
-  })
+  console.log(socket.id)
+  socket.on('add-todo', () => {
+    socket.broadcast.emit('server-added-todo')
+  });
 });
 
 
