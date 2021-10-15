@@ -21,13 +21,13 @@ const options = {
 const io = require('socket.io')(server, options);
 const PORT = 8000;
 
+let counter = 0;
 io.on("connection", (socket: Socket) => {
-  console.log('socket connected: ' + socket.id)
+  console.log(`socket number ${counter++} connected: ${socket.id}`)
   socket.on('add-todo', () => {
-    console.log('socket add todo')
+    console.log(`socket add todo ${counter++} id: ${socket.id}`)
     socket.broadcast.emit('server-added-todo')
   });
-  
 });
 
 
@@ -37,19 +37,19 @@ admin.initializeApp({
 });
 
 const validate = (req:express.Request, res:express.Response, next:express.NextFunction) => {   
-  console.log('inside validate')
+  // console.log('inside validate')
   if (!req.headers.authorization) {
-    console.log('inside validate if')
+    // console.log('inside validate if')
     res.status(500).send('You are not authorized');
     return;
   }    
-  console.log('authorization: ' + req.headers.authorization)
+  // console.log('authorization: ' + req.headers.authorization)
   admin
   .auth()
   .verifyIdToken(req.headers.authorization)
   .then((decodedToken) => {
     const uid = decodedToken.uid;
-    console.log('data: ' + uid)
+    // console.log('data: ' + uid)
     next()
   })
   .catch(error => {

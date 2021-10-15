@@ -7,14 +7,14 @@ import * as admin from 'firebase-admin';
 const router = express.Router();
 
 router.post('/api/todos', async (req, res) => {
-    console.log('0 inside post api')
+    // console.log('0 inside post api')
     try {
-        console.log('1 inside post api')
+        // console.log('1 inside post api')
         const todos: Array<Todo> = await TodoModel.find({});
         res.status(200).send(todos);
-        console.log('2 inside post api')
+        // console.log('2 inside post api')
     } catch (error: any) {
-        console.log('catch inside post api')
+        // console.log('catch inside post api')
         res.status(500).send(error.message);
     }
 });
@@ -23,7 +23,7 @@ router.post('/api/todo', async (req, res) => {
     const subTasks = req.body.subTasks;
     try {
         const doc = new TodoModel({
-        todoId: Math.floor(Math.random()*10000),
+        todoId: Math.floor(Math.random()*100000),
         task: req.body.task,
         isComplete: false,
         owner: 'philip.daveby@gmail.com',
