@@ -7,10 +7,14 @@ import * as admin from 'firebase-admin';
 const router = express.Router();
 
 router.post('/api/todos', async (req, res) => {
+    console.log('0 inside post api')
     try {
+        console.log('1 inside post api')
         const todos: Array<Todo> = await TodoModel.find({});
         res.status(200).send(todos);
+        console.log('2 inside post api')
     } catch (error: any) {
+        console.log('catch inside post api')
         res.status(500).send(error.message);
     }
 });

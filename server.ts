@@ -22,10 +22,12 @@ const io = require('socket.io')(server, options);
 const PORT = 8000;
 
 io.on("connection", (socket: Socket) => {
-  console.log(socket.id)
+  console.log('socket connected: ' + socket.id)
   socket.on('add-todo', () => {
+    console.log('socket add todo')
     socket.broadcast.emit('server-added-todo')
   });
+  
 });
 
 
@@ -35,18 +37,26 @@ admin.initializeApp({
 });
 
 const validate = (req:express.Request, res:express.Response, next:express.NextFunction) => {   
+  console.log('inside validate')
   if (!req.headers.authorization) {
+    console.log('inside validate if')
     res.status(500).send('You are not authorized');
     return;
   }    
+  console.log('authorization: ' + req.headers.authorization)
   admin
   .auth()
   .verifyIdToken(req.headers.authorization)
-  .then(() => next())
+  .then((decodedToken) => {
+    const uid = decodedToken.uid;
+    console.log('data: ' + uid)
+    next()
+  })
   .catch(error => {
     res.status(500).send(error.message);
     res.end();
-  })
+    return;
+  });
 }
 
 app.use(bodyParser.json());
@@ -56,7 +66,7 @@ app.use(validate)
 app.use('/', reminders);
 
 server.listen(PORT, () => {
-  console.log(`[server]: Server is running at ${config.frontend_url}`);
+  console.log(`[server]: Server is running at ${config.backend_url}`);
 });
 const run = async ():Promise<void> => {
   await connect(endpoint.MongoDBUrl);
