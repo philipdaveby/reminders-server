@@ -6,20 +6,28 @@ import * as admin from 'firebase-admin';
 
 const router = express.Router();
 
-router.post('/api/todos', async (req, res) => {
-    // console.log('0 inside post api')
+router.get('/api/todos', async (req, res) => {
+
     try {
-        // console.log('1 inside post api')
         const todos: Array<Todo> = await TodoModel.find({});
         res.status(200).send(todos);
-        // console.log('2 inside post api')
     } catch (error: any) {
-        // console.log('catch inside post api')
         res.status(500).send(error.message);
     }
 });
 
-router.post('/api/todo', async (req, res) => {
+// router.post('/api/todos', async (req, res) => {
+
+//     try {
+//         const todos: Array<Todo> = await TodoModel.find({});
+//         res.status(200).send(todos);
+//     } catch (error: any) {
+//         res.status(500).send(error.message);
+//     }
+// });
+
+router.post('/api/todos', async (req, res) => {
+    console.log('adding')
     const subTasks = req.body.subTasks;
     try {
         const doc = new TodoModel({
@@ -38,7 +46,7 @@ router.post('/api/todo', async (req, res) => {
     }
 });
 
-router.patch('/api/todo/:id', async (req, res) => {
+router.patch('/api/todos/:id', async (req, res) => {
 
     console.log('patching')
     const id = parseInt(req.params.id);
@@ -57,7 +65,7 @@ router.patch('/api/todo/:id', async (req, res) => {
 		res.send({ error: "Post doesn't exist!" })
 	}
 })
-router.put('/api/todo/:id', async (req, res) => {
+router.put('/api/todos/:id', async (req, res) => {
     
     const id = parseInt(req.params.id);
     const query = { todoId: id };
@@ -76,7 +84,7 @@ router.put('/api/todo/:id', async (req, res) => {
 	}
 })
 
-router.delete('/api/todo/:id', async (req, res) => {
+router.delete('/api/todos/:id', async (req, res) => {
     const id = parseInt(req.params.id);
     const query = { todoId: id };
 

@@ -26,8 +26,7 @@ io.on("connection", (socket: Socket) => {
   console.log(`socket number ${counter++} connected: ${socket.id}`)
   socket.on('add-todo', () => {
     console.log(`socket add todo ${counter++} id: ${socket.id}`)
-    io.emit('server-added-todo')
-    console.log('have emitted socket')
+    io.emit('update-todos')
   });
 });
 
