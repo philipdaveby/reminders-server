@@ -26,7 +26,8 @@ io.on("connection", (socket: Socket) => {
   console.log(`socket number ${counter++} connected: ${socket.id}`)
   socket.on('add-todo', () => {
     console.log(`socket add todo ${counter++} id: ${socket.id}`)
-    socket.broadcast.emit('server-added-todo')
+    io.emit('server-added-todo')
+    console.log('have emitted socket')
   });
 });
 
@@ -49,7 +50,7 @@ const validate = (req:express.Request, res:express.Response, next:express.NextFu
   .verifyIdToken(req.headers.authorization)
   .then((decodedToken) => {
     const uid = decodedToken.uid;
-    // console.log('data: ' + uid)
+    console.log('data: ' + uid)
     next()
   })
   .catch(error => {

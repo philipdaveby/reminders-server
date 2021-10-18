@@ -40,6 +40,7 @@ router.post('/api/todo', async (req, res) => {
 
 router.patch('/api/todo/:id', async (req, res) => {
 
+    console.log('patching')
     const id = parseInt(req.params.id);
     const query = { todoId: id };
     
@@ -50,6 +51,24 @@ router.patch('/api/todo/:id', async (req, res) => {
                 isComplete: req.body.isComplete
             });
             res.status(204).send()
+
+	} catch {
+		res.status(404)
+		res.send({ error: "Post doesn't exist!" })
+	}
+})
+router.put('/api/todo/:id', async (req, res) => {
+    
+    const id = parseInt(req.params.id);
+    const query = { todoId: id };
+    
+    try {
+        const todo = await TodoModel.findOneAndUpdate(
+            query,
+            {
+                task: req.body.task
+            });
+            res.status(200).send(todo)
 
 	} catch {
 		res.status(404)
