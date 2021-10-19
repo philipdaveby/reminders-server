@@ -8,7 +8,7 @@ export type Todo = {
 }
 
 type SubTask = {
-    todoId: number,
+    subId: number,
     task: string,
     isComplete: boolean,
     owner: string,
