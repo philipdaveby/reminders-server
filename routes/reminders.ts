@@ -27,7 +27,6 @@ router.get('/api/todos', async (req, res) => {
 // });
 
 router.post('/api/todos', async (req, res) => {
-    console.log('adding')
     try {
         const doc = new TodoModel({
         todoId: Math.floor(Math.random()*100000),
@@ -70,8 +69,6 @@ router.patch('/api/todos/:id', async (req, res) => {
             await TodoModel.find(query)
             .then( async (todo) => {
                     const newSubObject = todo[0].subTasks ? {subTasks: [...todo[0].subTasks, newSubTask]} : {subTasks: [newSubTask]}
-                    console.log(todo[0].subTasks);
-                    console.log(newSubTask);
                     await TodoModel.findOneAndUpdate(query, newSubObject);
                     res.status(204).send()
                 });
@@ -88,7 +85,6 @@ router.patch('/api/todos/:id/subtasks/:subid', async (req, res) => {
     const id = parseInt(req.params.id);
     const subId = parseInt(req.params.subid);
     const query = { todoId: id };
-    res.send();
     try {
         if (req.body.isComplete !== undefined) {
             console.log('got a req with id: ' + id + ' and subId: ' + subId)
@@ -110,7 +106,6 @@ router.patch('/api/todos/:id/subtasks/:subid', async (req, res) => {
                             subTasks: [...newSubTasks]
                         }).then(() => res.status(204).send());
                 }).catch(() => new Error)
-
         }
         // if (req.body.subTask) {
         //     const newSubTask = {
@@ -153,7 +148,40 @@ router.put('/api/todos/:id', async (req, res) => {
 		res.status(404)
 		res.send({ error: "Post doesn't exist!" })
 	}
-})
+});
+
+router.delete('/api/todos/:id/subtasks/:subid', async (req, res) => {
+    const id = parseInt(req.params.id);
+    const subId = parseInt(req.params.subid);
+    const query = { todoId: id };
+
+    try {
+        const todo = await TodoModel.find(query)
+        .then(async todo => {
+                if (todo[0].subTasks === undefined) {
+                    return;
+                }
+                const modifiedSubTasks = todo[0].subTasks;
+                const index = modifiedSubTasks.findIndex(sub => sub.subId === subId);
+                modifiedSubTasks.splice(index, 1)
+                // const newSubTasks = todo[0].subTasks.forEach((subTaskObject, index) => {
+                //     if (subTaskObject.subId === subId) {
+                //         newSubTasks.splice
+                //         return subTaskObject;
+                //     }
+                //     return subTaskObject;
+                // });
+                await TodoModel.findOneAndUpdate(
+                    query,
+                    {
+                        subTasks: [...modifiedSubTasks]
+                    }).then(() => res.status(204).send());
+            }).catch(() => res.status(404).send({ error: "Post doesn't exist!" }));
+    } catch {
+        res.status(404)
+		res.send({ error: "Post doesn't exist!" })
+    }
+});
 
 router.delete('/api/todos/:id', async (req, res) => {
     const id = parseInt(req.params.id);
@@ -166,7 +194,7 @@ router.delete('/api/todos/:id', async (req, res) => {
 		res.status(404)
 		res.send({ error: "Post doesn't exist!" })
 	}
-})
+});
 
 
 export default router;
