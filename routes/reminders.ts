@@ -3,36 +3,30 @@ import express from 'express'
 import TodoModel from '../models/Todo'
 import { Todo } from '../types'
 import * as admin from 'firebase-admin';
+import { v4 as uuidv4 } from 'uuid';
+import { canViewTodo, scopedTodos } from '../permissions/todo'
 
 const router = express.Router();
 
 router.get('/api/todos', async (req, res) => {
-
+    const cookie = req.headers.cookie;
+    if (cookie?.match(/[^user=]\w*/) === undefined || cookie?.match(/[^user=]\w*/)?.length === 0) return
+    const userId = cookie.match(/[^user=]\w*/)![0];
     try {
         const todos: Array<Todo> = await TodoModel.find({});
-        res.status(200).send(todos);
+        res.status(200).send(scopedTodos(userId, todos));
     } catch (error: any) {
         res.status(500).send(error.message);
     }
 });
 
-// router.post('/api/todos', async (req, res) => {
-
-//     try {
-//         const todos: Array<Todo> = await TodoModel.find({});
-//         res.status(200).send(todos);
-//     } catch (error: any) {
-//         res.status(500).send(error.message);
-//     }
-// });
-
 router.post('/api/todos', async (req, res) => {
     try {
         const doc = new TodoModel({
-        todoId: Math.floor(Math.random()*100000),
-        task: req.body.task,
+        todoId: uuidv4(),
+        task: req.body.todoObject.task,
         isComplete: false,
-        owner: 'philip.daveby@gmail.com',
+        userId: req.body.todoObject.userId,
         locked: false,
         subTasks: []
       });
@@ -46,24 +40,25 @@ router.post('/api/todos', async (req, res) => {
 
 router.patch('/api/todos/:id', async (req, res) => {
 
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
     const query = { todoId: id };
     
     try {
         if (req.body.isComplete !== undefined) {
-            await TodoModel.findOneAndUpdate(
+            const todos = await TodoModel.findOneAndUpdate(
                 query,
                 {
                     isComplete: req.body.isComplete
-                });
-            return res.status(204).send();
+                }, {new: true});
+                console.log(todos)
+            return res.status(200).send(todos);
         }
         if (req.body.subTask) {
             const newSubTask = {
-                "subId": Math.floor(Math.random()*100000),
+                "subId": uuidv4(),
                 "task": req.body.subTask,
                 "isComplete": false,
-                "owner": "philip.daveby@gmail.com",
+                "userId": "philip.daveby@gmail.com",
                 "locked": false
             }
             await TodoModel.find(query)
@@ -89,8 +84,8 @@ router.patch('/api/todos/:id', async (req, res) => {
 })
 
 router.patch('/api/todos/:id/subtasks/:subid', async (req, res) => {
-    const id = parseInt(req.params.id);
-    const subId = parseInt(req.params.subid);
+    const id = req.params.id;
+    const subId = req.params.subid;
     const query = { todoId: id };
     try {
         if (req.body.isComplete !== undefined) {
@@ -141,7 +136,7 @@ router.patch('/api/todos/:id/subtasks/:subid', async (req, res) => {
 })
 
 router.put('/api/todos/:id', async (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
     const query = { todoId: id };
     
     try {
@@ -158,8 +153,8 @@ router.put('/api/todos/:id', async (req, res) => {
 });
 
 router.delete('/api/todos/:id/subtasks/:subid', async (req, res) => {
-    const id = parseInt(req.params.id);
-    const subId = parseInt(req.params.subid);
+    const id = req.params.id;
+    const subId = req.params.subid;
     const query = { todoId: id };
 
     try {
@@ -185,7 +180,7 @@ router.delete('/api/todos/:id/subtasks/:subid', async (req, res) => {
 });
 
 router.delete('/api/todos/:id', async (req, res) => {
-    const id = parseInt(req.params.id);
+    const id = req.params.id;
     const query = { todoId: id };
 
     try {

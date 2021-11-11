@@ -7,10 +7,10 @@ import { Todo } from '../types'
 // }
 
 const TodoSchema = new Schema<Todo>({
-    todoId: { type: Number, required: true},
+    todoId: { type: String, required: true},
     task: { type: String, required: true},
     isComplete: { type: Boolean, required: true},
-    owner: { type: String, required: true},
+    userId: { type: String, required: true},
     locked: { type: Boolean, required: true},
     subTasks: { type: Array, required: true }
   });

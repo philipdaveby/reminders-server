@@ -1,16 +1,16 @@
 export type Todo = {
-    todoId: number,
+    todoId: string,
     task: string,
     isComplete: boolean,
-    owner: string,
+    userId: string,
     locked: boolean,
     subTasks?: Array<SubTask>
 }
 
 type SubTask = {
-    subId: number,
+    subId: string,
     task: string,
     isComplete: boolean,
-    owner: string,
+    userId: string,
     locked: boolean
 }
