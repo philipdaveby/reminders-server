@@ -13,10 +13,21 @@ router.get('/api/todos', async (req, res) => {
     console.log(cookie)
     if (cookie?.match(/[^user=]\w*$/) === undefined || cookie?.match(/[^user=]\w*$/)?.length === 0) return
     if (cookie?.match(/(?<=\=).*(?=;)/) === undefined || cookie?.match(/(?<=\=).*(?=;)/)?.length === 0) return
-    const userId = cookie.match(/[^user=]\w*$/)![0];
-    const email = cookie.match(/(?<=\=).*(?=;)/)![0];
+    let email, userId;
+    if (cookie.startsWith('email')) {
+        userId = cookie.match(/[^user=]\w*$/)![0];
+        email = cookie.match(/(?<=\=).*(?=;)/)![0];
+        console.log(email)
+        console.log(userId)
+    }
+    if (cookie.startsWith('user')) {
+        userId = cookie.match(/(?<=\=).*(?=;)/)![0];
+        email = cookie.match(/(?<=email\=).*/)![0];
+        console.log(email)
+        console.log(userId)
+    }
+    if (userId === undefined || email === undefined) return
     const editedEmail = email.replace('%40', '@')
-    console.log(userId)
     console.log(editedEmail)
     try {
         const todos: Array<Todo> = await TodoModel.find({});
