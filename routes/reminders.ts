@@ -10,11 +10,17 @@ const router = express.Router();
 
 router.get('/api/todos', async (req, res) => {
     const cookie = req.headers.cookie;
-    if (cookie?.match(/[^user=]\w*/) === undefined || cookie?.match(/[^user=]\w*/)?.length === 0) return
-    const userId = cookie.match(/[^user=]\w*/)![0];
+    console.log(cookie)
+    if (cookie?.match(/[^user=]\w*$/) === undefined || cookie?.match(/[^user=]\w*$/)?.length === 0) return
+    if (cookie?.match(/(?<=\=).*(?=;)/) === undefined || cookie?.match(/(?<=\=).*(?=;)/)?.length === 0) return
+    const userId = cookie.match(/[^user=]\w*$/)![0];
+    const email = cookie.match(/(?<=\=).*(?=;)/)![0];
+    const editedEmail = email.replace('%40', '@')
+    console.log(userId)
+    console.log(editedEmail)
     try {
         const todos: Array<Todo> = await TodoModel.find({});
-        res.status(200).send(scopedTodos(userId, todos));
+        res.status(200).send(scopedTodos(userId, editedEmail, todos));
     } catch (error: any) {
         res.status(500).send(error.message);
     }
@@ -55,7 +61,6 @@ router.patch('/api/todos/:id', async (req, res) => {
             return res.status(200).send(todos);
         }
         if (req.body.subTask) {
-            // Skicka med userId
             const newSubTask = {
                 "subId": uuidv4(),
                 "task": req.body.subTask,

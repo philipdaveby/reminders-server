@@ -11,6 +11,7 @@ const TodoSchema = new Schema<Todo>({
     task: { type: String, required: true},
     isComplete: { type: Boolean, required: true},
     userId: { type: String, required: true},
+    collaborators: { type: Array, required: true },
     locked: { type: Boolean, required: true},
     subTasks: { type: Array, required: true }
   });
