@@ -3,6 +3,7 @@ export type Todo = {
     task: string,
     isComplete: boolean,
     userId: string,
+    collaborators: Array<String>,
     locked: boolean,
     subTasks?: Array<SubTask>
 }
@@ -11,6 +12,5 @@ type SubTask = {
     subId: string,
     task: string,
     isComplete: boolean,
-    userId: string,
     locked: boolean
 }

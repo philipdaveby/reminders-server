@@ -27,6 +27,7 @@ router.post('/api/todos', async (req, res) => {
         task: req.body.todoObject.task,
         isComplete: false,
         userId: req.body.todoObject.userId,
+        collaborators: [],
         locked: false,
         subTasks: []
       });
@@ -54,11 +55,11 @@ router.patch('/api/todos/:id', async (req, res) => {
             return res.status(200).send(todos);
         }
         if (req.body.subTask) {
+            // Skicka med userId
             const newSubTask = {
                 "subId": uuidv4(),
                 "task": req.body.subTask,
                 "isComplete": false,
-                "userId": "philip.daveby@gmail.com",
                 "locked": false
             }
             await TodoModel.find(query)
