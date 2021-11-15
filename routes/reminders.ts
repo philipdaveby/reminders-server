@@ -77,27 +77,6 @@ router.patch('/api/todos/:id', async (req, res) => {
                 }})
             res.status(200).send(todo)
         }
-            // const todo = await TodoModel.find(query)
-            // .then(async todo => {
-            //     // Kommer den inte in hit? 
-            //     console.log(todo)
-            //     // if (todo.collaborators === undefined) return;
-            //     //     if (todo[0].collaborators === undefined) {
-            //     //         return;
-            //     //     }
-            //     //     // const newSubTasks = todo[0].collaborators.map(collaborator => {
-            //     //     //     if (subTaskObject.subId !== subId) {
-            //     //     //         return subTaskObject;
-            //     //     //     }
-            //     //     //     subTaskObject.task = req.body.subTask
-            //     //     //     return subTaskObject;
-            //     //     // });
-            //     //     await TodoModel.findOneAndUpdate(
-            //     //         query,
-            //     //         {
-            //     //             collaborators: [...todo.collaborators, req.body.collaborator]
-            //     //         }).then(() => res.status(204).send());
-            //     }).catch(() => new Error)
 
         if (req.body.subTask) {
             const newSubTask = {
@@ -119,7 +98,7 @@ router.patch('/api/todos/:id', async (req, res) => {
                 {
                     task: req.body.task
                 });
-            res.status(200).send(todo)
+            res.status(204).send()
         }
 
 	} catch {
