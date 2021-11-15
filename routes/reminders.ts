@@ -17,13 +17,11 @@ router.get('/api/todos', async (req, res) => {
     if (cookie.startsWith('email')) {
         userId = cookie.match(/[^user=]\w*$/)![0];
         email = cookie.match(/(?<=\=).*(?=;)/)![0];
-        console.log(email)
         console.log(userId)
     }
     if (cookie.startsWith('user')) {
         userId = cookie.match(/(?<=\=).*(?=;)/)![0];
         email = cookie.match(/(?<=email\=).*/)![0];
-        console.log(email)
         console.log(userId)
     }
     if (userId === undefined || email === undefined) return
@@ -71,6 +69,36 @@ router.patch('/api/todos/:id', async (req, res) => {
                 console.log(todos)
             return res.status(200).send(todos);
         }
+
+        if (req.body.collaborator) {
+            const todo = await TodoModel.findOneAndUpdate(
+                query, {$push: { 
+                    collaborators: req.body.collaborator
+                }})
+            res.status(200).send(todo)
+        }
+            // const todo = await TodoModel.find(query)
+            // .then(async todo => {
+            //     // Kommer den inte in hit? 
+            //     console.log(todo)
+            //     // if (todo.collaborators === undefined) return;
+            //     //     if (todo[0].collaborators === undefined) {
+            //     //         return;
+            //     //     }
+            //     //     // const newSubTasks = todo[0].collaborators.map(collaborator => {
+            //     //     //     if (subTaskObject.subId !== subId) {
+            //     //     //         return subTaskObject;
+            //     //     //     }
+            //     //     //     subTaskObject.task = req.body.subTask
+            //     //     //     return subTaskObject;
+            //     //     // });
+            //     //     await TodoModel.findOneAndUpdate(
+            //     //         query,
+            //     //         {
+            //     //             collaborators: [...todo.collaborators, req.body.collaborator]
+            //     //         }).then(() => res.status(204).send());
+            //     }).catch(() => new Error)
+
         if (req.body.subTask) {
             const newSubTask = {
                 "subId": uuidv4(),
@@ -125,6 +153,7 @@ router.patch('/api/todos/:id/subtasks/:subid', async (req, res) => {
                         }).then(() => res.status(204).send());
                 }).catch(() => new Error)
         }
+
         if (req.body.subTask) {
             const todo = await TodoModel.find(query)
             .then(async todo => {
