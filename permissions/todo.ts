@@ -5,14 +5,8 @@ const canViewTodo = (userId: String, todo: Todo) => {
 }
 
 const scopedTodos = (userId: string, email: string, todos: Array<Todo>) => {
-    return todos.filter(todo => {
-        return todo.userId === userId || todo.collaborators?.includes(email)
-    });
+    return todos.filter(todo => todo.userId === userId || todo.collaborators?.includes(email));
 }
-
-// const scopedExercises = (user, exercises) => {
-//     return exercises.filter(exercise => exercise.user === user || exercise.user === 'all');
-// }
 
 export {
     canViewTodo,

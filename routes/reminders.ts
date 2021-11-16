@@ -10,23 +10,19 @@ const router = express.Router();
 
 router.get('/api/todos', async (req, res) => {
     const cookie = req.headers.cookie;
-    console.log(cookie)
     if (cookie?.match(/[^user=]\w*$/) === undefined || cookie?.match(/[^user=]\w*$/)?.length === 0) return
     if (cookie?.match(/(?<=\=).*(?=;)/) === undefined || cookie?.match(/(?<=\=).*(?=;)/)?.length === 0) return
     let email, userId;
     if (cookie.startsWith('email')) {
-        userId = cookie.match(/[^user=]\w*$/)![0];
+        userId = cookie.match(/(?<=user\=).*/)![0];
         email = cookie.match(/(?<=\=).*(?=;)/)![0];
-        console.log(userId)
     }
     if (cookie.startsWith('user')) {
         userId = cookie.match(/(?<=\=).*(?=;)/)![0];
         email = cookie.match(/(?<=email\=).*/)![0];
-        console.log(userId)
     }
     if (userId === undefined || email === undefined) return
     const editedEmail = email.replace('%40', '@')
-    console.log(editedEmail)
     try {
         const todos: Array<Todo> = await TodoModel.find({});
         res.status(200).send(scopedTodos(userId, editedEmail, todos));
