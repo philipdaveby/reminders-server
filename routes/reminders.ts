@@ -1,7 +1,7 @@
 import express from 'express'
 // import { ObjectId } from "mongodb";
 import TodoModel from '../models/Todo'
-import { Todo } from '../types'
+import { SubTask, Todo } from '../types'
 import * as admin from 'firebase-admin';
 import { v4 as uuidv4 } from 'uuid';
 import { canViewTodo, scopedTodos } from '../permissions/todo'
@@ -56,15 +56,67 @@ router.patch('/api/todos/:id', async (req, res) => {
     const query = { todoId: id };
     
     try {
+        // if (req.body.isComplete !== undefined) {
+        //     console.log(req.body.isComplete)
+        //     const todos = await TodoModel.findOne(query)
+        //         .then((todo: any) => {
+        //             todo.subTasks.map((subTask: SubTask) => {
+        //                 return subTask.isComplete = req.body.isComplete;
+        //             })
+        //             todo.save();
+        //         });
+        //     return res.status(200).send(todos);
+        // }
+        // if (req.body.isComplete !== undefined) {
+        //     const todos = await TodoModel.findOneAndUpdate(
+        //         query,
+        //         (todo: Todo) => {todo?.subTasks?.map((subTask: SubTask) => subTask.isComplete = req.body.isComplete)}, {new: true});
+        //     return res.status(200).send(todos);
+        // }
+        
         if (req.body.isComplete !== undefined) {
-            const todos = await TodoModel.findOneAndUpdate(
-                query,
-                {
-                    isComplete: req.body.isComplete
-                }, {new: true});
-                console.log(todos)
-            return res.status(200).send(todos);
+            let newTodo = await TodoModel.findOne(query);
+            newTodo?.subTasks?.map(subTask => {
+                return subTask.isComplete = req.body.isComplete
+            });
+            if (newTodo?.subTasks === null) return;
+            let editedTodo = {
+                ...newTodo,
+                isComplete: req.body.isComplete,
+                subTasks: newTodo?.subTasks
+            }
+            await TodoModel.findOneAndUpdate(query, editedTodo)
+            res.status(204).send()
+
+            // let todo = await TodoModel.findOne(query);
+            // if (todo === null || todo === undefined) return;
+            
+            // todo.subTasks?.forEach(subTask => subTask.isComplete = req.body.isComplete);
+            // const newSubTasks: Array<SubTask> = [];
+            
+            // todo.subTasks?.forEach(subTask => {
+            //     subTask.isComplete = req.body.isComplete
+            //     newSubTasks.push(subTask);
+            // });
+            // todo.subTasks = newSubTasks;
+            // todo.save();
+            // let todo1 = await TodoModel.findOne(query);
+            // if (todo1 === null || todo1 === undefined) return;
+
+            // todo1.isComplete = req.body.isComplete;
+            // console.log(todo)
+            // console.log(todo1)
+            // todo1.save();
+            // return res.status(204).send()
         }
+        // if (req.body.isComplete !== undefined) {
+        //     const todos = await TodoModel.findOneAndUpdate(
+        //         query,
+        //         {
+        //             isComplete: req.body.isComplete,
+        //         }, {new: true});
+        //     return res.status(200).send(todos);
+        // }
 
         if (req.body.collaborator) {
             const todo = await TodoModel.findOneAndUpdate(
