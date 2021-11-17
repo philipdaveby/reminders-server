@@ -1,10 +1,8 @@
 import express from 'express'
-// import { ObjectId } from "mongodb";
 import TodoModel from '../models/Todo'
-import { SubTask, Todo } from '../types'
-import * as admin from 'firebase-admin';
+import { Todo } from '../types'
 import { v4 as uuidv4 } from 'uuid';
-import { canViewTodo, scopedTodos } from '../permissions/todo'
+import { scopedTodos } from '../permissions/todo'
 
 const router = express.Router();
 
@@ -12,17 +10,15 @@ router.get('/api/todos', async (req, res) => {
     const cookie = req.headers.cookie;
     if (cookie?.match(/[^user=]\w*$/) === undefined || cookie?.match(/[^user=]\w*$/)?.length === 0) return
     if (cookie?.match(/(?<=\=).*(?=;)/) === undefined || cookie?.match(/(?<=\=).*(?=;)/)?.length === 0) return
+    
     let email, userId;
-    if (cookie.startsWith('email')) {
-        userId = cookie.match(/(?<=user\=).*/)![0];
-        email = cookie.match(/(?<=\=).*(?=;)/)![0];
-    }
-    if (cookie.startsWith('user')) {
-        userId = cookie.match(/(?<=\=).*(?=;)/)![0];
-        email = cookie.match(/(?<=email\=).*/)![0];
-    }
+    cookie.startsWith('email') ? userId = cookie.match(/(?<=user\=).*/)![0] : userId = cookie.match(/(?<=\=).*(?=;)/)![0];
+    cookie.startsWith('email') ? email = cookie.match(/(?<=\=).*(?=;)/)![0] : email = cookie.match(/(?<=email\=).*/)![0];
+
     if (userId === undefined || email === undefined) return
+    
     const editedEmail = email.replace('%40', '@')
+
     try {
         const todos: Array<Todo> = await TodoModel.find({});
         res.status(200).send(scopedTodos(userId, editedEmail, todos));
@@ -56,97 +52,68 @@ router.patch('/api/todos/:id', async (req, res) => {
     const query = { todoId: id };
     
     try {
-        // if (req.body.isComplete !== undefined) {
-        //     console.log(req.body.isComplete)
-        //     const todos = await TodoModel.findOne(query)
-        //         .then((todo: any) => {
-        //             todo.subTasks.map((subTask: SubTask) => {
-        //                 return subTask.isComplete = req.body.isComplete;
-        //             })
-        //             todo.save();
-        //         });
-        //     return res.status(200).send(todos);
-        // }
-        // if (req.body.isComplete !== undefined) {
-        //     const todos = await TodoModel.findOneAndUpdate(
-        //         query,
-        //         (todo: Todo) => {todo?.subTasks?.map((subTask: SubTask) => subTask.isComplete = req.body.isComplete)}, {new: true});
-        //     return res.status(200).send(todos);
-        // }
-        
         if (req.body.isComplete !== undefined) {
-            let newTodo = await TodoModel.findOne(query);
-            newTodo?.subTasks?.map(subTask => {
+            let todo = await TodoModel.findOne(query);
+            todo?.subTasks?.map(subTask => {
                 return subTask.isComplete = req.body.isComplete
             });
-            if (newTodo?.subTasks === null) return;
+            if (todo?.subTasks === null) return;
             let editedTodo = {
-                ...newTodo,
+                _id: todo?._id,
+                todoId: todo?.todoId,
+                task: todo?.task,
                 isComplete: req.body.isComplete,
-                subTasks: newTodo?.subTasks
+                userId: todo?.userId,
+                collaborators: todo?.collaborators,
+                locked: todo?.locked,
+                subTasks: todo?.subTasks
             }
             await TodoModel.findOneAndUpdate(query, editedTodo)
-            res.status(204).send()
-
-            // let todo = await TodoModel.findOne(query);
-            // if (todo === null || todo === undefined) return;
-            
-            // todo.subTasks?.forEach(subTask => subTask.isComplete = req.body.isComplete);
-            // const newSubTasks: Array<SubTask> = [];
-            
-            // todo.subTasks?.forEach(subTask => {
-            //     subTask.isComplete = req.body.isComplete
-            //     newSubTasks.push(subTask);
-            // });
-            // todo.subTasks = newSubTasks;
-            // todo.save();
-            // let todo1 = await TodoModel.findOne(query);
-            // if (todo1 === null || todo1 === undefined) return;
-
-            // todo1.isComplete = req.body.isComplete;
-            // console.log(todo)
-            // console.log(todo1)
-            // todo1.save();
-            // return res.status(204).send()
+            res.sendStatus(204)
         }
-        // if (req.body.isComplete !== undefined) {
-        //     const todos = await TodoModel.findOneAndUpdate(
-        //         query,
-        //         {
-        //             isComplete: req.body.isComplete,
-        //         }, {new: true});
-        //     return res.status(200).send(todos);
-        // }
 
         if (req.body.collaborator) {
-            const todo = await TodoModel.findOneAndUpdate(
+            await TodoModel.findOneAndUpdate(
                 query, {$push: { 
                     collaborators: req.body.collaborator
                 }})
-            res.status(200).send(todo)
+            res.sendStatus(204)
         }
 
         if (req.body.subTask) {
-            const newSubTask = {
-                "subId": uuidv4(),
-                "task": req.body.subTask,
-                "isComplete": false,
-                "locked": false
-            }
-            await TodoModel.find(query)
-            .then( async (todo) => {
-                    const newSubObject = todo[0].subTasks ? {subTasks: [...todo[0].subTasks, newSubTask]} : {subTasks: [newSubTask]}
-                    await TodoModel.findOneAndUpdate(query, newSubObject);
-                    res.status(204).send()
-                });
+            await TodoModel.findOneAndUpdate(
+                query, {$push: { 
+                    subTasks: {
+                        "subId": uuidv4(),
+                        "task": req.body.subTask,
+                        "isComplete": false,
+                        "locked": false
+                    }
+                }})
+            res.sendStatus(204)
         }
+
+        // if (req.body.subTask) {
+        //     const newSubTask = {
+        //         "subId": uuidv4(),
+        //         "task": req.body.subTask,
+        //         "isComplete": false,
+        //         "locked": false
+        //     }
+        //     await TodoModel.find(query)
+        //     .then( async (todo) => {
+        //             const newSubObject = todo[0].subTasks ? {subTasks: [...todo[0].subTasks, newSubTask]} : {subTasks: [newSubTask]}
+        //             await TodoModel.findOneAndUpdate(query, newSubObject);
+        //             res.sendStatus(204)
+        //         });
+        // }
         if (req.body.task) {
             const todo = await TodoModel.findOneAndUpdate(
                 query,
                 {
                     task: req.body.task
                 });
-            res.status(204).send()
+            res.sendStatus(204)
         }
 
 	} catch {
@@ -264,6 +231,5 @@ router.delete('/api/todos/:id', async (req, res) => {
 		res.send({ error: "Post doesn't exist!" })
 	}
 });
-
 
 export default router;
