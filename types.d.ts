@@ -8,7 +8,11 @@ export type Todo = {
     subTasks?: Array<SubTask>
 }
 
-type SubTask = {
+export type Query = {
+    todoId: string
+}
+
+export type SubTask = {
     subId: string,
     task: string,
     isComplete: boolean,
