@@ -3,6 +3,7 @@ import TodoModel from '../models/Todo'
 import { Todo } from '../types'
 import { v4 as uuidv4 } from 'uuid';
 import { scopedTodos } from '../permissions/todo'
+const mongoose = require('../mongoose/functions')
 
 const router = express.Router();
 
@@ -29,18 +30,8 @@ router.get('/api/todos', async (req, res) => {
 
 router.post('/api/todos', async (req, res) => {
     try {
-        const doc = new TodoModel({
-        todoId: uuidv4(),
-        task: req.body.todoObject.task,
-        isComplete: false,
-        userId: req.body.todoObject.userId,
-        collaborators: [],
-        locked: false,
-        subTasks: []
-      });
-    
-      await doc.save();
-      res.sendStatus(201);
+        mongoose.addTodo(req.body.todoObject)
+        res.sendStatus(201);
     } catch (error: any) {
         res.status(500).send(error.message)
     }
