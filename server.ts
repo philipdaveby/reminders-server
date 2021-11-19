@@ -20,7 +20,7 @@ const options = {
   }
 }
 const io = require('socket.io')(server, options);
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 
 let counter = 0;
 io.on("connection", (socket: Socket) => {
@@ -63,7 +63,7 @@ app.use(validate)
 app.use('/', reminders);
 
 server.listen(PORT, () => {
-  console.log(`[server]: Server is running at ${config.backend_url}`);
+  console.log(`[server]: Server is running at port ${PORT}`);
 });
 
 const run = async ():Promise<void> => {
