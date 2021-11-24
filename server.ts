@@ -3,24 +3,25 @@ dotenv.config();
 import endpoint from './endpoints.config';
 import express from "express";
 import reminders from './routes/reminders'
-import bodyParser from 'body-parser'
 import { connect } from 'mongoose';
 import * as admin from 'firebase-admin';
 const cors = require('cors');
 const serviceAccount = require('./serviceAccountKey.json');
 import { Socket } from "socket.io";
 import config from './utils/config';
+const PORT = process.env.PORT || 8000;
 
 const app = express();
 const server = require('http').createServer(app)
+
 const options = {
   cors: {
-    credentials: true,
-    origin: [config.frontend_url]
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
   }
 }
+
 const io = require('socket.io')(server, options);
-const PORT = process.env.PORT || 8000;
 
 let counter = 0;
 io.on("connection", (socket: Socket) => {
@@ -31,13 +32,13 @@ io.on("connection", (socket: Socket) => {
   });
 });
 
-
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
   databaseURL: 'https://Reminders-Development.firebaseio.com'
 });
 
-const validate = (req:express.Request, res:express.Response, next:express.NextFunction) => {   
+const validate = async (req:express.Request, res:express.Response, next:express.NextFunction) => {
+
   if (!req.headers.authorization) {
     res.status(500).send('You are not authorized');
     return;
@@ -46,7 +47,7 @@ const validate = (req:express.Request, res:express.Response, next:express.NextFu
   .auth()
   .verifyIdToken(req.headers.authorization)
   .then((decodedToken) => {
-    const uid = decodedToken.uid;
+    res.locals.userId = decodedToken.uid;
     next()
   })
   .catch(error => {
@@ -56,8 +57,8 @@ const validate = (req:express.Request, res:express.Response, next:express.NextFu
   });
 }
 
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors(options.cors));
 app.use(validate)
 app.use('/', reminders);

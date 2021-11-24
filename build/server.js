@@ -36,22 +36,19 @@ dotenv_1.default.config();
 const endpoints_config_1 = __importDefault(require("./endpoints.config"));
 const express_1 = __importDefault(require("express"));
 const reminders_1 = __importDefault(require("./routes/reminders"));
-const body_parser_1 = __importDefault(require("body-parser"));
 const mongoose_1 = require("mongoose");
 const admin = __importStar(require("firebase-admin"));
 const cors = require('cors');
 const serviceAccount = require('./serviceAccountKey.json');
-const config_1 = __importDefault(require("./utils/config"));
 const app = (0, express_1.default)();
 const server = require('http').createServer(app);
 const options = {
     cors: {
-        credentials: true,
-        origin: [config_1.default.frontend_url]
+        origin: ['http://localhost:3000', 'https://todoreminders.netlify.app']
     }
 };
 const io = require('socket.io')(server, options);
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
 let counter = 0;
 io.on("connection", (socket) => {
     console.log(`socket number ${counter++} connected: ${socket.id}`);
@@ -64,7 +61,7 @@ admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: 'https://Reminders-Development.firebaseio.com'
 });
-const validate = (req, res, next) => {
+const validate = (req, res, next) => __awaiter(void 0, void 0, void 0, function* () {
     if (!req.headers.authorization) {
         res.status(500).send('You are not authorized');
         return;
@@ -73,7 +70,7 @@ const validate = (req, res, next) => {
         .auth()
         .verifyIdToken(req.headers.authorization)
         .then((decodedToken) => {
-        const uid = decodedToken.uid;
+        res.locals.userId = decodedToken.uid;
         next();
     })
         .catch(error => {
@@ -81,14 +78,14 @@ const validate = (req, res, next) => {
         res.end();
         return;
     });
-};
-app.use(body_parser_1.default.json());
-app.use(body_parser_1.default.urlencoded({ extended: true }));
+});
+app.use(express_1.default.json());
+app.use(express_1.default.urlencoded({ extended: true }));
 app.use(cors(options.cors));
 app.use(validate);
 app.use('/', reminders_1.default);
 server.listen(PORT, () => {
-    console.log(`[server]: Server is running at ${config_1.default.backend_url}`);
+    console.log(`[server]: Server is running at port ${PORT}`);
 });
 const run = () => __awaiter(void 0, void 0, void 0, function* () {
     yield (0, mongoose_1.connect)(endpoints_config_1.default.MongoDBUrl);

@@ -2,6 +2,7 @@ import express, { Response } from 'express'
 import { Todo } from '../types'
 import { scopedTodos } from '../permissions/todo'
 const mongoose = require('../mongoose/functions')
+import * as admin from 'firebase-admin';
 
 const router = express.Router();
 
@@ -13,21 +14,11 @@ const handleError = (response: { error: string }, res: Response) => {
 }
 
 router.get('/api/todos', async (req, res) => {
-    const cookie = req.headers.cookie;
-    if (cookie?.match(/[^user=]\w*$/) === undefined || cookie?.match(/[^user=]\w*$/)?.length === 0) return
-    if (cookie?.match(/(?<=\=).*(?=;)/) === undefined || cookie?.match(/(?<=\=).*(?=;)/)?.length === 0) return
-    
-    let email, userId;
-    cookie.startsWith('email') ? userId = cookie.match(/(?<=user\=).*/)![0] : userId = cookie.match(/(?<=\=).*(?=;)/)![0];
-    cookie.startsWith('email') ? email = cookie.match(/(?<=\=).*(?=;)/)![0] : email = cookie.match(/(?<=email\=).*/)![0];
-    
-    if (userId === undefined || email === undefined) return
-    
-    const editedEmail = email.replace('%40', '@')
+    const userId = res.locals.userId
     
     try {
         const todos: Array<Todo> = await mongoose.getTodos();
-        res.status(200).send(scopedTodos(userId, editedEmail, todos));
+        res.status(200).send(scopedTodos(userId, todos));
     } catch (error: any) {
         res.status(500).send(error.message);
     }
@@ -56,8 +47,15 @@ router.patch('/api/todos/:id', async (req, res) => {
         }
 
         if (req.body.collaborator) {
-            const databaseResponse = await mongoose.addCollaborator(query, req.body.collaborator);
-            handleError(databaseResponse, res);
+            await admin.auth().getUserByEmail(req.body.collaborator)
+            .then(async user => {
+                    const collaboratorObject = {
+                        email: req.body.collaborator,
+                        userId: user.uid
+                    }
+                    const databaseResponse = await mongoose.addCollaborator(query, collaboratorObject);
+                    handleError(databaseResponse, res);
+                })
             return res.sendStatus(204)
         }
 
